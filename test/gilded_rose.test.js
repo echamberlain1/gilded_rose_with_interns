@@ -45,4 +45,13 @@ describe("Gilded Rose", function () {
 
     expect(items[0].numberOfDaysToSell).toBe(initialDaysToSell - 1);
   });
+
+  it("should increase the value of 'Aged Brie' after each day", function () {
+    const initialValue = 4;
+    const gildedRose = new Shop([
+      new Item("Aged Brie", 4, initialValue),
+    ]);
+    const items = gildedRose.updateValue();
+    expect(items[0].value).toBe(initialValue + 1);
+  });
 });
