@@ -1,7 +1,7 @@
 
 const { Shop, Item } = require("../src/gilded_rose");
 
-const items = [
+const testItems = [
   new Item("+5 Dexterity Vest", 10, 20),
   new Item("Aged Brie", 2, 0),
   new Item("Elixir of the Mongoose", 5, 7),
@@ -16,12 +16,16 @@ const items = [
 ];
 
 const days = Number(process.argv[2]) || 2;
-const gildedRose = new Shop(items);
+let gildedRose = new Shop(testItems);
 
-console.log("OMGHAI!");
-for (let day = 0; day < days; day++) {
-  console.log(`\n-------- day ${day} --------`);
-  console.log("name, sellIn, quality");
-  items.forEach(item => console.log(`${item.name}, ${item.sellIn}, ${item.quality}`));
-  gildedRose.updateQuality();
-}
+// console.log("OMGHAI!");
+// for (let day = 0; day < days; day++) {
+//   console.log(`\n-------- day ${day} --------`);
+//   console.log("name, sellIn, quality");
+//   testItems.forEach(item => console.log(`${item.name}, ${item.sellIn}, ${item.quality}`));
+//   gildedRose.updateValue();
+// }
+
+module.exports = {
+  gildedRose,
+};

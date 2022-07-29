@@ -6,10 +6,11 @@ class Item {
   }
 }
 
-var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO = 11;
-var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE = 6;
+var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO = 10;
+var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE = 5;
 var MAX_ITEM_VALUE = 50;
 var MIN_ITEM_VALUE = 0;
+const BASE_DEGRADATION_RATE = 1;
 
 class Shop {
   constructor(items = []) {
@@ -22,12 +23,12 @@ class Shop {
       if (!this.isItemMoreValuableWithAge(item)) {
         if (item.value > MIN_ITEM_VALUE) {
           if (!this.isLegendaryItem(item)) {
-            item.value -= 1;
+            item.value -= BASE_DEGRADATION_RATE;
           }
         }
       } else {
         if (item.value < MAX_ITEM_VALUE) {
-          item.value += 1;
+          item.value += BASE_DEGRADATION_RATE;
           if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
             this.addUrgencyValueForBackstageDeadlines(item);
           }
@@ -43,14 +44,14 @@ class Shop {
               this.doesItemStillHaveValue(item) &&
               !this.isLegendaryItem(item)
             ) {
-              item.value -= 1;
+              item.value -= BASE_DEGRADATION_RATE;
             }
           } else {
             item.value = MIN_ITEM_VALUE;
           }
         } else {
           if (item.value < MAX_ITEM_VALUE) {
-            item.value += 1;
+            item.value += BASE_DEGRADATION_RATE;
           }
         }
       }
@@ -65,19 +66,19 @@ class Shop {
 
   addUrgencyValueForBackstageDeadlines(item) {
     if (
-      item.numberOfDaysToSell <
+      item.numberOfDaysToSell <=
       BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO
     ) {
       if (item.value < MAX_ITEM_VALUE) {
-        item.value += 1;
+        item.value += BASE_DEGRADATION_RATE;
       }
     }
     if (
-      item.numberOfDaysToSell <
+      item.numberOfDaysToSell <=
       BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE
     ) {
       if (item.value < MAX_ITEM_VALUE) {
-        item.value += 1;
+        item.value += BASE_DEGRADATION_RATE;
       }
     }
   }
@@ -97,4 +98,5 @@ class Shop {
 module.exports = {
   Item,
   Shop,
+  BASE_DEGRADATION_RATE
 };
