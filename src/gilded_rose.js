@@ -1,10 +1,12 @@
 class Item {
-  constructor(name, numberOfDaysToSell, value) {
+  constructor(name, numberOfDaysToSell, value, isConjured = false) {
     this.name = name;
     this.numberOfDaysToSell = numberOfDaysToSell;
     this.value = value;
   }
 }
+
+const BASE_DEGRADATION_RATE = 1;
 
 var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO = 11;
 var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE = 6;
@@ -20,9 +22,12 @@ class Shop {
     for (let i = 0; i < this.items.length; i++) {
       var item = this.items[i];
       if (!this.isItemMoreValuableWithAge(item)) {
-        if (item.value > MIN_ITEM_VALUE) {
+        if (this.doesItemStillHaveValue(item)) {
           if (!this.isLegendaryItem(item)) {
-            item.value -= 1;
+            item.value -= BASE_DEGRADATION_RATE;
+          }
+          if (this.isConjuredItem(item)) {
+            item.value -= BASE_DEGRADATION_RATE;
           }
         }
       } else {
@@ -43,7 +48,10 @@ class Shop {
               this.doesItemStillHaveValue(item) &&
               !this.isLegendaryItem(item)
             ) {
-              item.value -= 1;
+              item.value -= BASE_DEGRADATION_RATE;
+              if (this.isConjuredItem(item)) {
+                item.value -= BASE_DEGRADATION_RATE;
+              }
             }
           } else {
             item.value = MIN_ITEM_VALUE;
@@ -86,6 +94,10 @@ class Shop {
     return item.name == "Sulfuras, Hand of Ragnaros";
   }
 
+  isConjuredItem(item) {
+    return item.name.toLowerCase().includes("conjured");
+  }
+
   isItemMoreValuableWithAge(item) {
     return (
       item.name == "Aged Brie" ||
@@ -97,4 +109,5 @@ class Shop {
 module.exports = {
   Item,
   Shop,
+  BASE_DEGRADATION_RATE,
 };
