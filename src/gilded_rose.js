@@ -1,5 +1,5 @@
 class Item {
-  constructor(name, numberOfDaysToSell, value, isConjured = false) {
+  constructor(name, numberOfDaysToSell, value) {
     this.name = name;
     this.numberOfDaysToSell = numberOfDaysToSell;
     this.value = value;
@@ -21,22 +21,15 @@ class Shop {
   updateValue() {
     for (let i = 0; i < this.items.length; i++) {
       var item = this.items[i];
-      if (!this.isItemMoreValuableWithAge(item)) {
-        if (this.doesItemStillHaveValue(item)) {
-          if (!this.isLegendaryItem(item)) {
-            item.value -= BASE_DEGRADATION_RATE;
-          }
-          if (this.isConjuredItem(item)) {
-            item.value -= BASE_DEGRADATION_RATE;
-          }
-        }
-      } else {
+      if (this.isItemMoreValuableWithAge(item)) {
         if (item.value < MAX_ITEM_VALUE) {
           item.value += 1;
           if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
             this.addUrgencyValueForBackstageDeadlines(item);
           }
         }
+      } else {
+        this.degradeItemValue(item)
       }
       if (!this.isLegendaryItem(item)) {
         item.numberOfDaysToSell -= 1;
@@ -49,7 +42,7 @@ class Shop {
               !this.isLegendaryItem(item)
             ) {
               item.value -= BASE_DEGRADATION_RATE;
-              if (this.isConjuredItem(item)) {
+              if (this.doesItemStillHaveValue(item) && this.isConjuredItem(item)) {
                 item.value -= BASE_DEGRADATION_RATE;
               }
             }
@@ -104,6 +97,30 @@ class Shop {
       item.name == "Backstage passes to a TAFKAL80ETC concert"
     );
   }
+
+  degradeItemValue(item) {
+    var degradationRate = this.determineDegradationRate(item);
+    if(item.value >= degradationRate) {
+      item.value -= degradationRate;
+    } else {
+      item.value = 0;
+    }
+  }
+
+  determineDegradationRate(item) {
+    var degradationRate = BASE_DEGRADATION_RATE
+    if (this.isLegendaryItem(item)){
+      degradationRate = 0;
+    }
+    else if (this.isConjuredItem(item)){
+      degradationRate = 2 * BASE_DEGRADATION_RATE;
+    }
+    return degradationRate
+  }
+
+
+
+
 }
 
 module.exports = {
