@@ -6,6 +6,8 @@ class Item {
   }
 }
 
+const BASE_DEGRADATION_RATE = 1;
+
 var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO = 11;
 var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE = 6;
 var MAX_ITEM_VALUE = 50;
@@ -19,19 +21,15 @@ class Shop {
   updateValue() {
     for (let i = 0; i < this.items.length; i++) {
       var item = this.items[i];
-      if (!this.isItemMoreValuableWithAge(item)) {
-        if (item.value > MIN_ITEM_VALUE) {
-          if (!this.isLegendaryItem(item)) {
-            item.value -= 1;
-          }
-        }
-      } else {
+      if (this.isItemMoreValuableWithAge(item)) {
         if (item.value < MAX_ITEM_VALUE) {
           item.value += 1;
           if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
             this.addUrgencyValueForBackstageDeadlines(item);
           }
         }
+      } else {
+        this.degradeItemValue(item)
       }
       if (!this.isLegendaryItem(item)) {
         item.numberOfDaysToSell -= 1;
@@ -43,7 +41,10 @@ class Shop {
               this.doesItemStillHaveValue(item) &&
               !this.isLegendaryItem(item)
             ) {
-              item.value -= 1;
+              item.value -= BASE_DEGRADATION_RATE;
+              if (this.doesItemStillHaveValue(item) && this.isConjuredItem(item)) {
+                item.value -= BASE_DEGRADATION_RATE;
+              }
             }
           } else {
             item.value = MIN_ITEM_VALUE;
@@ -86,15 +87,44 @@ class Shop {
     return item.name == "Sulfuras, Hand of Ragnaros";
   }
 
+  isConjuredItem(item) {
+    return item.name.toLowerCase().includes("conjured");
+  }
+
   isItemMoreValuableWithAge(item) {
     return (
       item.name == "Aged Brie" ||
       item.name == "Backstage passes to a TAFKAL80ETC concert"
     );
   }
+
+  degradeItemValue(item) {
+    var degradationRate = this.determineDegradationRate(item);
+    if(item.value >= degradationRate) {
+      item.value -= degradationRate;
+    } else {
+      item.value = 0;
+    }
+  }
+
+  determineDegradationRate(item) {
+    var degradationRate = BASE_DEGRADATION_RATE
+    if (this.isLegendaryItem(item)){
+      degradationRate = 0;
+    }
+    else if (this.isConjuredItem(item)){
+      degradationRate = 2 * BASE_DEGRADATION_RATE;
+    }
+    return degradationRate
+  }
+
+
+
+
 }
 
 module.exports = {
   Item,
   Shop,
+  BASE_DEGRADATION_RATE,
 };
