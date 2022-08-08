@@ -35,25 +35,26 @@ class Shop {
         item.numberOfDaysToSell -= 1;
       }
       if (item.numberOfDaysToSell < 0) {
-        if (item.name != "Aged Brie") {
-          if (item.name != "Backstage passes to a TAFKAL80ETC concert") {
-            if (
-              this.doesItemStillHaveValue(item) &&
-              !this.isLegendaryItem(item)
-            ) {
-              item.value -= BASE_DEGRADATION_RATE;
-              if (this.doesItemStillHaveValue(item) && this.isConjuredItem(item)) {
-                item.value -= BASE_DEGRADATION_RATE;
-              }
-            }
-          } else {
-            item.value = MIN_ITEM_VALUE;
-          }
-        } else {
+        if (item.name == "Aged Brie") {
           if (item.value < MAX_ITEM_VALUE) {
             item.value += 1;
           }
+        } 
+        else if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
+          item.value = MIN_ITEM_VALUE;
         }
+        else {
+          if (
+            this.doesItemStillHaveValue(item) &&
+            !this.isLegendaryItem(item)
+          ) {
+            item.value -= BASE_DEGRADATION_RATE;
+            if (this.doesItemStillHaveValue(item) && this.isConjuredItem(item)) {
+              item.value -= BASE_DEGRADATION_RATE;
+            }
+          }
+        }
+  
       }
     }
 
