@@ -44,15 +44,7 @@ class Shop {
           item.value = MIN_ITEM_VALUE;
         }
         else {
-          if (
-            this.doesItemStillHaveValue(item) &&
-            !this.isLegendaryItem(item)
-          ) {
-            item.value -= BASE_DEGRADATION_RATE;
-            if (this.doesItemStillHaveValue(item) && this.isConjuredItem(item)) {
-              item.value -= BASE_DEGRADATION_RATE;
-            }
-          }
+          this.degradeItemValue(item)
         }
   
       }
