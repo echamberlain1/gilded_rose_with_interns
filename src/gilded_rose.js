@@ -23,10 +23,10 @@ class Shop {
       var item = this.items[i];
 
       if (item.numberOfDaysToSell > 0){
-          if (this.isItemMoreValuableWithAge(item)) {
+          if (this.itemIsMoreValuableWithAge(item)) {
               item.value += this.increaseItemValue(item);
           } else {
-              item.value -= this.degradeItemValue(item);
+              item.value -= this.decreaseItemValue(item);
           }
       } 
       else {
@@ -34,34 +34,84 @@ class Shop {
               item.value = MIN_ITEM_VALUE;
           }
           else if (item.name == "Aged Brie"){
-              item.value += 1;
+              item.value += this.increaseItemValue(item);;
           }
           else {
-              item.value -= this.degradeExpiredItemsTwiceAsFast(item);
+              item.value -= this.decreaseExpiredItemsTwiceAsFast(item);
           }
       }
 
-      if (!this.isLegendaryItem(item)) {
+      // number of days to sell decreases after each day  
+      if (!this.itemIsLegendary(item)) {
         item.numberOfDaysToSell -= 1;
-      }
-
-
-      if (item.numberOfDaysToSell < 0) {
-        if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
-          item.value = MIN_ITEM_VALUE;
-        }
-        else {
-          this.degradeItemValue(item)
-        }
-  
       }
     }
 
     return this.items;
   }
 
-  doesItemStillHaveValue(item) {
-    return item.value > MIN_ITEM_VALUE;
+  itemIsLegendary(item) {
+    return item.name == "Sulfuras, Hand of Ragnaros";
+  }
+
+  itemIsConjured(item) {
+    return item.name.toLowerCase().includes("conjured");
+  }
+
+  itemIsMoreValuableWithAge(item) {
+    return (
+      item.name == "Aged Brie" ||
+      item.name == "Backstage passes to a TAFKAL80ETC concert"
+    );
+  }
+
+  increaseItemValue(item) {
+    var increaseValueRate = this.determineIncreaseValueRate(item);
+    if((item.value + increaseValueRate) < MAX_ITEM_VALUE){
+      return increaseValueRate;
+    } else {
+      return MAX_ITEM_VALUE - (item.value + increaseValueRate)
+    }
+  }
+
+  determineIncreaseValueRate(item){
+    var increasedValueRate = 1;
+    if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
+      increasedValueRate += this.determineBackstagePassValueIncrease(item);
+    }
+    return increasedValueRate;
+  }
+
+  decreaseItemValue(item) {
+    var decreaseValueRate = this.determineDecreaseValueRate(item);
+    if(item.value >= decreaseValueRate) {
+      return decreaseValueRate;
+    } else {
+      return item.value
+    }
+  }
+
+  determineDecreaseValueRate(item) {
+    var decreaseValueRate = BASE_DEGRADATION_RATE
+    if (this.itemIsLegendary(item)){
+      decreaseValueRate = 0;
+    }
+    else if (this.itemIsConjured(item)){
+      decreaseValueRate = 2 * BASE_DEGRADATION_RATE;
+    }
+    else if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
+      decreaseValueRate = item.value - MIN_ITEM_VALUE;
+    }
+    return decreaseValueRate
+  }
+
+  decreaseExpiredItemsTwiceAsFast(item) {
+    var decreaseValueRate = 2 * this.decreaseItemValue(item);
+    if(item.value >= decreaseValueRate) {
+        return decreaseValueRate;
+    } else {
+        return item.value
+    }
   }
 
   determineBackstagePassValueIncrease(item) {
@@ -84,72 +134,6 @@ class Shop {
     }
     return backstagePassValueIncrease;
   }
-
-  isLegendaryItem(item) {
-    return item.name == "Sulfuras, Hand of Ragnaros";
-  }
-
-  isConjuredItem(item) {
-    return item.name.toLowerCase().includes("conjured");
-  }
-
-  isItemMoreValuableWithAge(item) {
-    return (
-      item.name == "Aged Brie" ||
-      item.name == "Backstage passes to a TAFKAL80ETC concert"
-    );
-  }
-
-  increaseItemValue(item) {
-    var increaseValueRate = this.determineIncreaseValueRate(item);
-    if((item.value + increaseValueRate) < MAX_ITEM_VALUE){
-      return increaseValueRate;
-    } else {
-      return MAX_ITEM_VALUE - (item.value + increaseValueRate)
-    }
-  }
-
-  degradeItemValue(item) {
-    var degradationRate = this.determineDegradationRate(item);
-    if(item.value >= degradationRate) {
-      return degradationRate;
-    } else {
-      return item.value
-    }
-  }
-
-  degradeExpiredItemsTwiceAsFast(item) {
-      var degradationRate = 2 * this.degradeItemValue(item);
-      if(item.value >= degradationRate) {
-          return degradationRate;
-      } else {
-          return item.value
-      }
-  }
-
-  determineIncreaseValueRate(item){
-    var increasedValueRate = 1;
-    if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
-      increasedValueRate += this.determineBackstagePassValueIncrease(item);
-    }
-    return increasedValueRate;
-  }
-
-  determineDegradationRate(item) {
-    var degradationRate = BASE_DEGRADATION_RATE
-    if (this.isLegendaryItem(item)){
-      degradationRate = 0;
-    }
-    else if (this.isConjuredItem(item)){
-      degradationRate = 2 * BASE_DEGRADATION_RATE;
-    }
-    else if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
-      degradationRate = item.value - MIN_ITEM_VALUE;
-    }
-    return degradationRate
-  }
-
-
 }
 
 module.exports = {
