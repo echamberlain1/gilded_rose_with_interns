@@ -20,17 +20,15 @@ class Shop {
 
   updateValue() {
     for (let i = 0; i < this.items.length; i++) {
+
       var item = this.items[i];
       if (this.isItemMoreValuableWithAge(item)) {
-        if (item.value < MAX_ITEM_VALUE) {
-          item.value += 1;
-          if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
-            this.addUrgencyValueForBackstageDeadlines(item);
-          }
-        }
+        this.increaseItemValue(item);
       } else {
-        this.degradeItemValue(item)
+        this.degradeItemValue(item);
       }
+
+
       if (!this.isLegendaryItem(item)) {
         item.numberOfDaysToSell -= 1;
       }
@@ -57,13 +55,14 @@ class Shop {
     return item.value > MIN_ITEM_VALUE;
   }
 
-  addUrgencyValueForBackstageDeadlines(item) {
+  determineBackstagePassValueIncrease(item) {
+    var backstagePassValueIncrease = 0;
     if (
       item.numberOfDaysToSell <
       BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO
     ) {
       if (item.value < MAX_ITEM_VALUE) {
-        item.value += 1;
+        backstagePassValueIncrease += 1;
       }
     }
     if (
@@ -71,9 +70,10 @@ class Shop {
       BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE
     ) {
       if (item.value < MAX_ITEM_VALUE) {
-        item.value += 1;
+        backstagePassValueIncrease += 1;
       }
     }
+    return backstagePassValueIncrease;
   }
 
   isLegendaryItem(item) {
@@ -91,13 +91,30 @@ class Shop {
     );
   }
 
+  increaseItemValue(item) {
+    var increaseValueRate = this.determineIncreaseValueRate(item);
+    if((item.value + increaseValueRate) < MAX_ITEM_VALUE){
+      item.value += increaseValueRate;
+    } else {
+      item.value = MAX_ITEM_VALUE;
+    }
+  }
+
   degradeItemValue(item) {
     var degradationRate = this.determineDegradationRate(item);
     if(item.value >= degradationRate) {
       item.value -= degradationRate;
     } else {
-      item.value = 0;
+      item.value = MIN_ITEM_VALUE;
     }
+  }
+
+  determineIncreaseValueRate(item){
+    var increasedValueRate = 1;
+    if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
+      increasedValueRate += this.determineBackstagePassValueIncrease(item);
+    }
+    return increasedValueRate;
   }
 
   determineDegradationRate(item) {
@@ -107,6 +124,9 @@ class Shop {
     }
     else if (this.isConjuredItem(item)){
       degradationRate = 2 * BASE_DEGRADATION_RATE;
+    }
+    else if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
+      degradationRate = item.value - MIN_ITEM_VALUE;
     }
     return degradationRate
   }
