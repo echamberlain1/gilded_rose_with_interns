@@ -20,25 +20,34 @@ class Shop {
 
   updateValue() {
     for (let i = 0; i < this.items.length; i++) {
-
       var item = this.items[i];
-      if (this.isItemMoreValuableWithAge(item)) {
-        this.increaseItemValue(item);
-      } else {
-        this.degradeItemValue(item);
-      }
 
+      if (item.numberOfDaysToSell > 0){
+          if (this.isItemMoreValuableWithAge(item)) {
+              item.value += this.increaseItemValue(item);
+          } else {
+              item.value -= this.degradeItemValue(item);
+          }
+      } 
+      else {
+          if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
+              item.value = MIN_ITEM_VALUE;
+          }
+          else if (item.name == "Aged Brie"){
+              item.value += 1;
+          }
+          else {
+              item.value -= this.degradeExpiredItemsTwiceAsFast(item);
+          }
+      }
 
       if (!this.isLegendaryItem(item)) {
         item.numberOfDaysToSell -= 1;
       }
+
+
       if (item.numberOfDaysToSell < 0) {
-        if (item.name == "Aged Brie") {
-          if (item.value < MAX_ITEM_VALUE) {
-            item.value += 1;
-          }
-        } 
-        else if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
+        if (item.name == "Backstage passes to a TAFKAL80ETC concert"){
           item.value = MIN_ITEM_VALUE;
         }
         else {
@@ -94,19 +103,28 @@ class Shop {
   increaseItemValue(item) {
     var increaseValueRate = this.determineIncreaseValueRate(item);
     if((item.value + increaseValueRate) < MAX_ITEM_VALUE){
-      item.value += increaseValueRate;
+      return increaseValueRate;
     } else {
-      item.value = MAX_ITEM_VALUE;
+      return MAX_ITEM_VALUE - (item.value + increaseValueRate)
     }
   }
 
   degradeItemValue(item) {
     var degradationRate = this.determineDegradationRate(item);
     if(item.value >= degradationRate) {
-      item.value -= degradationRate;
+      return degradationRate;
     } else {
-      item.value = MIN_ITEM_VALUE;
+      return item.value
     }
+  }
+
+  degradeExpiredItemsTwiceAsFast(item) {
+      var degradationRate = 2 * this.degradeItemValue(item);
+      if(item.value >= degradationRate) {
+          return degradationRate;
+      } else {
+          return item.value
+      }
   }
 
   determineIncreaseValueRate(item){
@@ -130,8 +148,6 @@ class Shop {
     }
     return degradationRate
   }
-
-
 
 
 }
