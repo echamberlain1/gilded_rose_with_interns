@@ -1,124 +1,105 @@
-class Item {
-  constructor(name, numberOfDaysToSell, value) {
+class Item 
+{
+  constructor(name, numberOfDaysToSell, value) 
+  {
     this.name = name;
     this.numberOfDaysToSell = numberOfDaysToSell;
     this.value = value;
   }
 }
 
-const BASE_DEGRADATION_RATE = 1;
+const BASE_VALUE_CHANGE_RATE = -1;
 
-var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO = 11;
-var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE = 6;
+var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO = 10;
+var BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE = 5;
 var MAX_ITEM_VALUE = 50;
 var MIN_ITEM_VALUE = 0;
 
-class Shop {
-  constructor(items = []) {
+class Shop 
+{
+  constructor(items = []) 
+  {
     this.items = items;
   }
 
-  updateValue() {
-    for (let i = 0; i < this.items.length; i++) {
-      var item = this.items[i];
-      if (this.isItemMoreValuableWithAge(item)) {
-        if (item.value < MAX_ITEM_VALUE) {
-          item.value += 1;
-          if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
-            this.addUrgencyValueForBackstageDeadlines(item);
-          }
-        }
-      } else {
-        this.degradeItemValue(item)
-      }
-      if (!this.isLegendaryItem(item)) {
-        item.numberOfDaysToSell -= 1;
-      }
-      if (item.numberOfDaysToSell < 0) {
-        if (item.name != "Aged Brie") {
-          if (item.name != "Backstage passes to a TAFKAL80ETC concert") {
-            if (
-              this.doesItemStillHaveValue(item) &&
-              !this.isLegendaryItem(item)
-            ) {
-              item.value -= BASE_DEGRADATION_RATE;
-              if (this.doesItemStillHaveValue(item) && this.isConjuredItem(item)) {
-                item.value -= BASE_DEGRADATION_RATE;
-              }
-            }
-          } else {
-            item.value = MIN_ITEM_VALUE;
-          }
-        } else {
-          if (item.value < MAX_ITEM_VALUE) {
-            item.value += 1;
-          }
-        }
-      }
+  updateItems() 
+  {
+    for (let i = 0; i < this.items.length; i++) 
+    {
+    var item = this.items[i];
+    this.changeItemValue(item);
+    item.numberOfDaysToSell -= 1;
+    this.items[i] = item;
     }
 
     return this.items;
   }
 
-  doesItemStillHaveValue(item) {
-    return item.value > MIN_ITEM_VALUE;
-  }
 
-  addUrgencyValueForBackstageDeadlines(item) {
-    if (
-      item.numberOfDaysToSell <
-      BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO
-    ) {
-      if (item.value < MAX_ITEM_VALUE) {
-        item.value += 1;
-      }
-    }
-    if (
-      item.numberOfDaysToSell <
-      BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE
-    ) {
-      if (item.value < MAX_ITEM_VALUE) {
-        item.value += 1;
-      }
-    }
-  }
-
-  isLegendaryItem(item) {
+  isLegendaryItem(item) 
+  {
     return item.name == "Sulfuras, Hand of Ragnaros";
   }
 
-  isConjuredItem(item) {
+  isConjuredItem(item) 
+  {
     return item.name.toLowerCase().includes("conjured");
   }
 
-  isItemMoreValuableWithAge(item) {
+  isItemMoreValuableWithAge(item) 
+  {
     return (
       item.name == "Aged Brie" ||
       item.name == "Backstage passes to a TAFKAL80ETC concert"
     );
   }
 
-  degradeItemValue(item) {
-    var degradationRate = this.determineDegradationRate(item);
-    if(item.value >= degradationRate) {
-      item.value -= degradationRate;
-    } else {
-      item.value = 0;
+  changeItemValue(item) {
+    var changeRate = this.determineValueChangeRate(item);
+    item.value += changeRate;
+
+    if (item.value > MAX_ITEM_VALUE && !this.isLegendaryItem(item)) {
+      item.value = MAX_ITEM_VALUE;
+    }
+
+    if (item.value < MIN_ITEM_VALUE) {
+      item.value = MIN_ITEM_VALUE;
+    }
+
+    if (item.numberOfDaysToSell < 0 && item.name == "Backstage passes to a TAFKAL80ETC concert") {
+      item.value = MIN_ITEM_VALUE;
     }
   }
 
-  determineDegradationRate(item) {
-    var degradationRate = BASE_DEGRADATION_RATE
+  determineValueChangeRate(item) {
+    var rate = BASE_VALUE_CHANGE_RATE;
+
+    if (this.isConjuredItem(item)){
+      rate *= 2;
+    }
+    if (this.isItemMoreValuableWithAge(item)){
+      rate *= -1;
+    }
+    if (item.numberOfDaysToSell < 0 && !this.isItemMoreValuableWithAge(item)) {
+      rate *= 2;
+    }
+
+    if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
+      if (item.numberOfDaysToSell <= BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO) {
+        rate -= BASE_VALUE_CHANGE_RATE;
+      }
+
+      if (item.numberOfDaysToSell <= BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE) {
+        rate -= BASE_VALUE_CHANGE_RATE;
+      }
+    }
+
     if (this.isLegendaryItem(item)){
-      degradationRate = 0;
+      rate = 0;
     }
-    else if (this.isConjuredItem(item)){
-      degradationRate = 2 * BASE_DEGRADATION_RATE;
-    }
-    return degradationRate
+
+    return rate;
   }
-
-
 
 
 }
@@ -126,5 +107,5 @@ class Shop {
 module.exports = {
   Item,
   Shop,
-  BASE_DEGRADATION_RATE,
+  BASE_VALUE_CHANGE_RATE,
 };

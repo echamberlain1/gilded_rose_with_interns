@@ -1,4 +1,5 @@
-const { Shop, Item, BASE_DEGRADATION_RATE } = require("../src/gilded_rose");
+const { Shop, Item, BASE_VALUE_CHANGE_RATE } = require("../src/gilded_rose");
+var { testItems } = require("../test/texttest_fixture");
 
 describe("Gilded Rose", function () {
   it("should let all items have SellIn property", function () {
@@ -21,7 +22,7 @@ describe("Gilded Rose", function () {
       new Item("+5 Dexterity Vest", initialDaysToSell, 0),
     ]);
 
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
 
     expect(items[0].numberOfDaysToSell).toBe(initialDaysToSell - 1);
   });
@@ -32,8 +33,8 @@ describe("Gilded Rose", function () {
       new Item("+5 Dexterity Vest", initialDaysToSell, 0),
     ]);
 
-    var items = gildedRose.updateValue();
-    items = gildedRose.updateValue();
+    var items = gildedRose.updateItems();
+    items = gildedRose.updateItems();
 
     expect(items[0].numberOfDaysToSell < 0).toBe(true);
   });
@@ -41,24 +42,24 @@ describe("Gilded Rose", function () {
   it("should decrease the value of normal items by 1 after each day", function () {
     const gildedRose = new Shop([new Item("foo", 5, 5)]);
 
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
 
     expect(items[0].value).toBe(4);
   });
 
   it("should degrade items that degrade twice as fast when sell date has passed", function () {
     const initialValue = 10;
-    const gildedRose = new Shop([new Item("expired", 0, initialValue)]);
+    const gildedRose = new Shop([new Item("expired", -1, initialValue)]);
 
-    var actualItem = gildedRose.updateValue()[0];
+    var actualItem = gildedRose.updateItems()[0];
 
-    expect(actualItem.value).toBe(initialValue - 2 * BASE_DEGRADATION_RATE);
+    expect(actualItem.value).toBe(initialValue + 2 * BASE_VALUE_CHANGE_RATE);
   });
 
   it("should never update an item to have negative value", function () {
-    const gildedRose = new Shop([new Item("conjured negative", 0, 3)]);
+    const gildedRose = new Shop([new Item("conjured negative", 0, 0)]);
 
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
 
     expect(items[0].value).toBe(0);
   });
@@ -66,7 +67,7 @@ describe("Gilded Rose", function () {
   it("should increase the value of 'Aged Brie' after each day", function () {
     const initialValue = 4;
     const gildedRose = new Shop([new Item("Aged Brie", 4, initialValue)]);
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
     expect(items[0].value > initialValue).toBe(true);
   });
 
@@ -75,7 +76,7 @@ describe("Gilded Rose", function () {
     const gildedRose = new Shop([
       new Item("Aged Brie", 4, maxValueOfNormalItem),
     ]);
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
     expect(items[0].value <= maxValueOfNormalItem).toBe(true);
   });
 
@@ -84,7 +85,7 @@ describe("Gilded Rose", function () {
     const gildedRose = new Shop([
       new Item("Sulfuras, Hand of Ragnaros", 4, valueOfLegendaryItem),
     ]);
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
     expect(items[0].value < valueOfLegendaryItem).toBe(false);
   });
 
@@ -93,7 +94,7 @@ describe("Gilded Rose", function () {
     const gildedRose = new Shop([
       new Item("Backstage passes to a TAFKAL80ETC concert", 4, initialValue),
     ]);
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
     expect(items[0].value > initialValue).toBe(true);
   });
 
@@ -113,7 +114,7 @@ describe("Gilded Rose", function () {
         ),
       ]);
 
-      const items = gildedRose.updateValue();
+      const items = gildedRose.updateItems();
 
       expect(items[0].value).toBe(initialValue + expectedChangeInValue);
     }
@@ -135,7 +136,7 @@ describe("Gilded Rose", function () {
         ),
       ]);
 
-      const items = gildedRose.updateValue();
+      const items = gildedRose.updateItems();
 
       expect(items[0].value).toBe(initialValue + expectedChangeInValue);
     }
@@ -143,17 +144,17 @@ describe("Gilded Rose", function () {
 
   it("should update the value of 'Backstage passes' to zero after the concert date has passed", function () {
     const gildedRose = new Shop([
-      new Item("Backstage passes to a TAFKAL80ETC concert", 0, 20),
+      new Item("Backstage passes to a TAFKAL80ETC concert", -1, 20),
     ]);
-    const items = gildedRose.updateValue();
+    const items = gildedRose.updateItems();
     expect(items[0].value).toBe(0);
   });
 
   it("should degrade items that are 'conjured' at twice the base rate", function () {
     const initialValue = 10;
     const gildedRose = new Shop([new Item("conjured items", 10, initialValue)]);
-    var actualItem = gildedRose.updateValue()[0];
-    expect(actualItem.value).toBe(initialValue - 2 * BASE_DEGRADATION_RATE);
+    var actualItem = gildedRose.updateItems()[0];
+    expect(actualItem.value).toBe(initialValue + 2 * BASE_VALUE_CHANGE_RATE);
   });
 
   it("should degrade normal items that are 'conjured' and are past the sell by date at four times the base rate", () => {
@@ -162,8 +163,8 @@ describe("Gilded Rose", function () {
       new Item("normal expired conjured item", -1, initialValue),
     ]);
 
-    var actualItem = gildedRose.updateValue()[0];
+    var actualItem = gildedRose.updateItems()[0];
 
-    expect(actualItem.value).toBe(initialValue - 4 * BASE_DEGRADATION_RATE);
+    expect(actualItem.value).toBe(initialValue + 4 * BASE_VALUE_CHANGE_RATE);
   });
 });
