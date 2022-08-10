@@ -54,51 +54,77 @@ class Shop
     );
   }
 
-  changeItemValue(item) {
+  isNormalItem(item)
+  {
+    return (
+      !this.isConjuredItem(item) &&
+      !this.isLegendaryItem(item) &&
+      !this.isItemMoreValuableWithAge(item) &&
+      item.numberOfDaysToSell >=0
+    );
+  }
+
+  changeItemValue(item) 
+  {
     var changeRate = this.determineValueChangeRate(item);
     item.value += changeRate;
 
-    if (item.value > MAX_ITEM_VALUE && !this.isLegendaryItem(item)) {
+    if (item.value > MAX_ITEM_VALUE && !this.isLegendaryItem(item)) 
+    {
       item.value = MAX_ITEM_VALUE;
     }
 
-    if (item.value < MIN_ITEM_VALUE) {
+    if (item.value < MIN_ITEM_VALUE) 
+    {
       item.value = MIN_ITEM_VALUE;
     }
 
-    if (item.numberOfDaysToSell < 0 && item.name == "Backstage passes to a TAFKAL80ETC concert") {
+    if (item.numberOfDaysToSell < 0 && item.name == "Backstage passes to a TAFKAL80ETC concert") 
+    {
       item.value = MIN_ITEM_VALUE;
     }
   }
 
-  determineValueChangeRate(item) {
+  determineValueChangeRate(item) 
+  {
     var rate = BASE_VALUE_CHANGE_RATE;
 
-    if (this.isConjuredItem(item)){
+    if (this.isConjuredItem(item))
+    {
       rate *= 2;
     }
-    if (this.isItemMoreValuableWithAge(item)){
+    
+    if (this.isItemMoreValuableWithAge(item))
+    {
       rate *= -1;
     }
-    if (item.numberOfDaysToSell < 0 && !this.isItemMoreValuableWithAge(item)) {
+    
+    if (item.numberOfDaysToSell < 0 && !this.isItemMoreValuableWithAge(item)) 
+    {
       rate *= 2;
     }
 
     if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
-      if (item.numberOfDaysToSell <= BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO) {
+      
+      if (item.numberOfDaysToSell <= BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_TWO) 
+      {
         rate -= BASE_VALUE_CHANGE_RATE;
       }
 
-      if (item.numberOfDaysToSell <= BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE) {
+      if (item.numberOfDaysToSell <= BACKSTAGE_PASS_DEADLINE_BEFORE_VALUE_INCREASE_BY_THREE) 
+      {
         rate -= BASE_VALUE_CHANGE_RATE;
       }
+
     }
 
-    if (this.isLegendaryItem(item)){
+    if (this.isLegendaryItem(item))
+    {
       rate = 0;
     }
 
     return rate;
+
   }
 
 
