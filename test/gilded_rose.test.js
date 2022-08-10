@@ -1,4 +1,4 @@
-const { Shop, Item, BASE_VALUE_CHANGE_RATE } = require("../src/gilded_rose");
+const { Shop, Item, BASE_VALUE_CHANGE_RATE, MAX_ITEM_VALUE, MIN_ITEM_VALUE } = require("../src/gilded_rose");
 var { testItems, testShop } = require("../test/texttest_fixture");
 
 
@@ -41,11 +41,11 @@ describe("Gilded Rose", function () {
   it("should decrease the value of normal items by 1 after each day", function () {
     var shop = testShop;
      shop.items.forEach((item) => {
-      if (shop.isNormalItem(item)) 
+      if (shop.isNormalItem(item) && !shop.isExpiredItem(item)) 
       {
         var initialValue = item.value;
         shop.updateItems();
-        expect(item.value).toBe(initialValue - 1);
+        expect(item.value).toBe(initialValue + BASE_VALUE_CHANGE_RATE);
       }
      });
   });
@@ -53,20 +53,20 @@ describe("Gilded Rose", function () {
   it("should degrade normal items twice as fast when sell date has passed", function () {
     var shop = testShop;
     shop.items.forEach((item) => {
-      if (shop.isNormalItem(item) && item.numberOfDaysToSell < 0)
+      if (shop.isNormalItem(item) && shop.isExpiredItem(item))
       {
         var initialValue = item.value;
         shop.updateItems();
-        expect(item.value).toBe(initialValue - 2);
+        expect(item.value == initialValue + 2*BASE_VALUE_CHANGE_RATE || item.value == 0).toBe(true);
       }
     });
   });
 
-  it("should never update an item to have negative value", function () {
+  it("should never update an item to below the min value", function () {
     var shop = testShop;
     shop.items.forEach((item) => {
       shop.updateItems();
-      expect(item.value >= 0 ).toBe(true);
+      expect(item.value >= MIN_ITEM_VALUE).toBe(true);
     });
   });
 
@@ -77,17 +77,17 @@ describe("Gilded Rose", function () {
       {
         initialValue = item.value;
         shop.updateItems();
-        expect(item.value).toBe(initialValue - BASE_VALUE_CHANGE_RATE);
+        expect(item.value == initialValue - BASE_VALUE_CHANGE_RATE || item.value == MAX_ITEM_VALUE).toBe(true);
       }
     });
   });
 
-  it("should never let any non-legendary item have value more than 50", function () {
+  it("should never let any non-legendary item have value more the maximum value", function () {
     var shop = testShop;
     shop.items.forEach((item) => {
       if (!shop.isLegendaryItem(item)) 
       {
-        expect(item.value <= 50).toBe(true);
+        expect(item.value <= MAX_ITEM_VALUE).toBe(true);
       }
     });
   });
@@ -104,67 +104,49 @@ describe("Gilded Rose", function () {
     });
   });
 
-//REFACTOR THIS; MAY TAKE A WHILE
   it("should increase the value of 'Backstage passes' after each day before the concert date", function () { 
-    const initialValue = 10;
-    const gildedRose = new Shop([
-      new Item("Backstage passes to a TAFKAL80ETC concert", 4, initialValue),
-    ]);
-    const items = gildedRose.updateItems();
-    expect(items[0].value > initialValue).toBe(true);
-  });
-
-  test.each([
-    [6, 2],
-    [8, 2],
-    [10, 2],
-  ])(
-    "should increase the value of 'Backstage passes' by 2 when there are 10 days or less but still more than 5 days",
-    (numberOfDaysToSell, expectedChangeInValue) => {
-      const initialValue = 20;
-      const gildedRose = new Shop([
-        new Item(
-          "Backstage passes to a TAFKAL80ETC concert",
-          numberOfDaysToSell,
-          initialValue
-        ),
-      ]);
-
-      const items = gildedRose.updateItems();
-
-      expect(items[0].value).toBe(initialValue + expectedChangeInValue);
-    }
-  );
-
-  test.each([
-    [1, 3],
-    [3, 3],
-    [5, 3],
-  ])(
-    "should increase the value of 'Backstage passes' by 3 when there are 5 days or less but still more than 0",
-    function (numberOfDaysToSell, expectedChangeInValue) {
-      const initialValue = 20;
-      const gildedRose = new Shop([
-        new Item(
-          "Backstage passes to a TAFKAL80ETC concert",
-          numberOfDaysToSell,
-          initialValue
-        ),
-      ]);
-
-      const items = gildedRose.updateItems();
-
-      expect(items[0].value).toBe(initialValue + expectedChangeInValue);
-    }
-  );
-
-  it("should update the value of 'Backstage passes' to zero after the concert date has passed", function () {
     var shop = testShop;
     shop.items.forEach((item) => {
-      if (item.name == "Backstage passes to a TAFKAL80ETC concert" && item.numberOfDaysToSell < 0) 
+      if (item.name == "Backstage passes to a TAFKAL80ETC concert" && !shop.isExpiredItem(item)) 
+      {
+        initialValue = item.value;
+        shop.updateItems();
+        expect(item.value > initialValue).toBe(true);
+      }
+    });
+  });
+
+  it("should increase the value of 'Backstage passes' by 2 when there are 10 days or less but still more than 5 days", function () {
+    var shop = testShop;
+    shop.items.forEach((item) => {
+      if (item.name == "Backstage passes to a TAFKAL80ETC concert" && item.numberOfDaysToSell <= 10 && item.numberOfDaysToSell > 5) 
+      {
+        initialValue = item.value;
+        shop.updateItems();
+        expect(item.value == initialValue + 2*BASE_VALUE_CHANGE_RATE).toBe(true);
+      }
+    });
+  });
+
+  it("should increase the value of 'Backstage passes' by 3 when there are 5 days or less but still more than 0", function () {
+    var shop = testShop;
+    shop.items.forEach((item) => {
+      if (item.name == "Backstage passes to a TAFKAL80ETC concert" && item.numberOfDaysToSell <= 5 && item.numberOfDaysToSell > 0) 
+      {
+        initialValue = item.value;
+        shop.updateItems();
+        expect(item.value == initialValue + 3*BASE_VALUE_CHANGE_RATE).toBe(true);
+      }
+    });
+  });    
+
+  it("should update the value of 'Backstage passes' to minimum value after the concert date has passed", function () {
+    var shop = testShop;
+    shop.items.forEach((item) => {
+      if (item.name == "Backstage passes to a TAFKAL80ETC concert" && shop.isExpiredItem(item)) 
       {
         shop.updateItems();
-        expect(item.value).toBe(0);
+        expect(item.value).toBe(MIN_ITEM_VALUE);
       }
     });
   });
@@ -176,19 +158,19 @@ describe("Gilded Rose", function () {
       {
         initialValue = item.value;
         shop.updateItems();
-        expect((item.value == initialValue + 2*BASE_VALUE_CHANGE_RATE) || item.value == 0).toBe(true);
+        expect((item.value == initialValue + 2*BASE_VALUE_CHANGE_RATE) || item.value == MIN_ITEM_VALUE).toBe(true);
       }
     });
   });
 
-  it("should degrade normal items that are 'conjured' and are past the sell by date at four times the base rate", () => {
+  it("should degrade items that are 'conjured' and are past the sell by date at four times the base rate", () => {
     var shop = testShop;
     shop.items.forEach((item) => {
-      if (shop.isNormalItem(item) && shop.isConjuredItem(item) && item.numberOfDaysToSell < 0) 
+      if (shop.isConjuredItem(item) && shop.isExpiredItem(item)) 
       {
         initialValue = item.value;
         shop.updateItems();
-        expect((item.value == initialValue + 4*BASE_VALUE_CHANGE_RATE) || item.value == 0).toBe(true);
+        expect((item.value == initialValue + 4*BASE_VALUE_CHANGE_RATE) || item.value == MIN_ITEM_VALUE).toBe(true);
       }
     });
   });

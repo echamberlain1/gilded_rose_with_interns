@@ -26,10 +26,8 @@ class Shop
   {
     for (let i = 0; i < this.items.length; i++) 
     {
-    var item = this.items[i];
-    this.changeItemValue(item);
-    item.numberOfDaysToSell -= 1;
-    this.items[i] = item;
+    this.changeItemValue(this.items[i]);
+    this.items[i].numberOfDaysToSell -= 1;
     }
 
     return this.items;
@@ -59,9 +57,13 @@ class Shop
     return (
       !this.isConjuredItem(item) &&
       !this.isLegendaryItem(item) &&
-      !this.isItemMoreValuableWithAge(item) &&
-      item.numberOfDaysToSell >=0
+      !this.isItemMoreValuableWithAge(item)
     );
+  }
+
+  isExpiredItem(item)
+  {
+    return item.numberOfDaysToSell < 0;
   }
 
   changeItemValue(item) 
@@ -79,7 +81,7 @@ class Shop
       item.value = MIN_ITEM_VALUE;
     }
 
-    if (item.numberOfDaysToSell < 0 && item.name == "Backstage passes to a TAFKAL80ETC concert") 
+    if (this.isExpiredItem(item) && item.name == "Backstage passes to a TAFKAL80ETC concert") 
     {
       item.value = MIN_ITEM_VALUE;
     }
@@ -99,7 +101,7 @@ class Shop
       rate *= -1;
     }
     
-    if (item.numberOfDaysToSell < 0 && !this.isItemMoreValuableWithAge(item)) 
+    if (!this.isExpiredItem(item) && !this.isItemMoreValuableWithAge(item)) 
     {
       rate *= 2;
     }
@@ -134,4 +136,6 @@ module.exports = {
   Item,
   Shop,
   BASE_VALUE_CHANGE_RATE,
+  MAX_ITEM_VALUE,
+  MIN_ITEM_VALUE,
 };
