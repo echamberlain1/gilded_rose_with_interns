@@ -1,11 +1,10 @@
-
 const { Shop, Item } = require("../src/gilded_rose");
 
-var testItems = [
+var testItems = () => [
   new Item("+5 Dexterity Vest", 10, 20),
   new Item("Aged Brie", 2, 0),
   new Item("Aged Brie", 0, 50),
-  new Item("aged Brie", -5, 10),
+  new Item("Aged Brie", -5, 10),
   new Item("Elixir of the Mongoose", 5, 7),
   new Item("Sulfuras, Hand of Ragnaros", 0, 80),
   new Item("Sulfuras, Hand of Ragnaros", -1, 80),
@@ -19,8 +18,7 @@ var testItems = [
   new Item("normal nearly expired item", 0, 5),
   new Item("normal expired item", -3, 5),
   new Item("worthless item", 4, 0),
-
 ];
 
 const testShop = new Shop(testItems);
-module.exports = {testItems, testShop};
+module.exports = { testItems, testShop };
